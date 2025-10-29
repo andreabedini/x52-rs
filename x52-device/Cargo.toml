@@ -1,0 +1,7 @@
+[package]
+name = "x52-device"
+version.workspace = true
+edition.workspace = true
+description = "Protocol definitions and shared types for Saitek X52/X52 Pro HOTAS"
+repository.workspace = true
+license.workspace = true

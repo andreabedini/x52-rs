@@ -1,0 +1,22 @@
+[package]
+name = "x52-usb"
+version.workspace = true
+edition.workspace = true
+description = "Async USB control library for Saitek X52/X52 Pro HOTAS MFD and LEDs"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+derive_more = { version = "2.0.1", features = ["display"] }
+log = { workspace = true }
+nusb = { workspace = true }
+smol = { workspace = true }
+thiserror = { workspace = true }
+x52-device = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+chrono = "0.4"
+log = { workspace = true }
+smol = { workspace = true }

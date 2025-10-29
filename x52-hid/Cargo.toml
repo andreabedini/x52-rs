@@ -1,0 +1,21 @@
+[package]
+name = "x52-hid"
+version.workspace = true
+edition.workspace = true
+description = "Async HID input library for Saitek X52/X52 Pro HOTAS"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+async-hid = { workspace = true }
+async-io = { workspace = true }
+futures-lite = { workspace = true }
+log = { workspace = true }
+smol = { workspace = true }
+thiserror = { workspace = true }
+x52-device = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+smol = { workspace = true }

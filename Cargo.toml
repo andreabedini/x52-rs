@@ -1,0 +1,30 @@
+[workspace]
+resolver = "3"
+members = ["x52-device", "x52-hid", "x52-usb"]
+default-members = ["x52-device", "x52-hid", "x52-usb"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+repository = "https://github.com/andreabedini/x52"
+license = "MIT"
+
+[workspace.dependencies]
+# Error handling
+anyhow = "1.0"
+async-hid = { version = "0.4.4", features = ["async-io"] }
+async-io = "2.6.0"
+# Utilities
+bitflags = "2.6"
+futures = "0.3"
+# Async runtime
+futures-lite = "2.6.1"
+# Logging
+log = "0.4.28"
+nusb = { version = "0.2.1", features = ["smol"] }
+smol = "2.0.2"
+thiserror = "2.0"
+# Internal dependencies
+x52-device = { path = "x52-device" }
+x52-hid = { path = "x52-hid" }
+x52-usb = { path = "x52-usb" }
