@@ -147,7 +147,7 @@ Requires Rust edition 2024 (resolver v3).
 
 ## License
 
-GPL-2.0-or-later WITH Classpath-exception-2.0
+MIT
 
 ## Credits
 
