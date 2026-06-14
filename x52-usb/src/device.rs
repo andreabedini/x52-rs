@@ -18,7 +18,7 @@ use x52_device::device::VENDOR_SAITEK;
 
 /// X52/X52 Pro output control device
 pub struct X52Device {
-    device: Arc<nusb::Device>,
+    interface: Arc<nusb::Interface>,
     variant: DeviceVariant,
     /// Internal state for deferred updates (optional)
     state: Arc<Mutex<DeviceState>>,
@@ -79,10 +79,18 @@ impl X52Device {
                 }
             };
 
+            let interface = match device.claim_interface(0).await {
+                Ok(i) => i,
+                Err(e) => {
+                    warn!("Failed to claim interface 0: {}", e);
+                    continue;
+                }
+            };
+
             info!("Successfully opened {} device", variant.name());
 
             return Ok(Self {
-                device: Arc::new(device),
+                interface: Arc::new(interface),
                 variant,
                 state: Arc::new(Mutex::new(DeviceState::default())),
             });
@@ -138,7 +146,7 @@ impl X52Device {
         let timeout = Duration::from_millis(REQUEST_TIMEOUT_MS);
 
         let result = self
-            .device
+            .interface
             .control_out(
                 ControlOut {
                     control_type: ControlType::Vendor,
@@ -321,19 +329,19 @@ impl X52Device {
 
     /// Create a batch update builder for sending multiple commands at once
     pub fn batch(&self) -> BatchUpdate {
-        BatchUpdate::new(self.device.clone())
+        BatchUpdate::new(self.interface.clone())
     }
 }
 
 /// Builder for sending multiple USB commands in a single batch
 pub struct BatchUpdate {
-    device: Arc<nusb::Device>,
+    device: Arc<nusb::Interface>,
     commands: Vec<Command>,
 }
 
 impl BatchUpdate {
     /// Create new batch update
-    pub(crate) fn new(device: Arc<nusb::Device>) -> Self {
+    pub(crate) fn new(device: Arc<nusb::Interface>) -> Self {
         Self {
             device,
             commands: Vec::new(),
