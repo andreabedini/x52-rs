@@ -49,6 +49,12 @@ impl X52Device {
 
         let devices = nusb::list_devices().await?;
 
+        // Track the last open/claim failure so we can surface a meaningful
+        // error (e.g. permission/driver issues) when a matching device was
+        // found but could not be claimed, instead of a misleading
+        // `DeviceNotFound`.
+        let mut last_error: Option<anyhow::Error> = None;
+
         for dev_info in devices {
             if dev_info.vendor_id() != VENDOR_SAITEK {
                 continue;
@@ -75,6 +81,7 @@ impl X52Device {
                 Ok(d) => d,
                 Err(e) => {
                     warn!("Failed to open device: {}", e);
+                    last_error = Some(anyhow::Error::new(e).context("failed to open device"));
                     continue;
                 }
             };
@@ -83,6 +90,7 @@ impl X52Device {
                 Ok(i) => i,
                 Err(e) => {
                     warn!("Failed to claim interface 0: {}", e);
+                    last_error = Some(anyhow::Error::new(e).context("failed to claim interface 0"));
                     continue;
                 }
             };
@@ -96,7 +104,9 @@ impl X52Device {
             });
         }
 
-        Err(Error::DeviceNotFound.into())
+        // If we discovered a matching device but couldn't open/claim it,
+        // propagate that error rather than reporting `DeviceNotFound`.
+        Err(last_error.unwrap_or_else(|| Error::DeviceNotFound.into()))
     }
 
     /// Send USB control transfer command
@@ -335,15 +345,15 @@ impl X52Device {
 
 /// Builder for sending multiple USB commands in a single batch
 pub struct BatchUpdate {
-    device: Arc<nusb::Interface>,
+    interface: Arc<nusb::Interface>,
     commands: Vec<Command>,
 }
 
 impl BatchUpdate {
     /// Create new batch update
-    pub(crate) fn new(device: Arc<nusb::Interface>) -> Self {
+    pub(crate) fn new(interface: Arc<nusb::Interface>) -> Self {
         Self {
-            device,
+            interface,
             commands: Vec::new(),
         }
     }
@@ -441,7 +451,7 @@ impl BatchUpdate {
 
         for cmd in self.commands {
             let result = self
-                .device
+                .interface
                 .control_out(
                     ControlOut {
                         control_type: ControlType::Vendor,
